@@ -6,7 +6,7 @@ const { personas } = require('./schema');
 const dotenv = require("dotenv");
 
 const app = express();
-
+const path = require('path');
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
