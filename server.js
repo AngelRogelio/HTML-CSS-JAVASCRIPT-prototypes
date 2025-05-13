@@ -5,9 +5,19 @@ const { db } = require('./db');
 const { personas } = require('./schema');
 const dotenv = require("dotenv");
 
+const app = express();
+
+// Servir archivos estáticos desde la carpeta 'public'
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Ruta para tu archivo main.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'Main.html'));
+});
+
 dotenv.config();
 
-const app = express();
+
 const port = 3000;
 
 // Middleware para habilitar CORS
