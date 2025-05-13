@@ -1,0 +1,32 @@
+{
+  "name": "mi-proyecto-drizzle",
+  "version": "1.0.0",
+  "description": "Proyecto backend usando Express, PostgreSQL y Drizzle ORM",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "db:studio": "npx drizzle-kit studio",
+    "db:push": "npx drizzle-kit push"
+  },
+  "keywords": [
+    "express",
+    "postgresql",
+    "drizzle-orm",
+    "backend"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.42.0",
+    "express": "^5.1.0",
+    "pg": "^8.14.1"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.0",
+    "nodemon": "^3.0.2"
+  }
+}

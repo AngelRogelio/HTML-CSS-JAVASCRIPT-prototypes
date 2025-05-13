@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRUD de Personas</title>
+    <style>
+      :root {
+        --primary-color: #4f46e5;
+        --primary-hover: #4338ca;
+        --error-color: #ef4444;
+        --success-color: #22c55e;
+        --text-color: #1f2937;
+        --bg-color: #f9fafb;
+        --border-color: #e5e7eb;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: var(--primary-color);
+      }
+
+      .crud-container {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+      }
+
+      @media (min-width: 768px) {
+        .crud-container {
+          flex-direction: row;
+          align-items: flex-start;
+        }
+      }
+
+      .form-container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        flex: 1;
+      }
+
+      .table-container {
+        background-color: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        flex: 1;
+        overflow-x: auto;
+      }
+
+      .form-title {
+        margin-bottom: 20px;
+        font-size: 1.2rem;
+        color: var(--primary-color);
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+      }
+
+      .required::after {
+        content: " *";
+        color: var(--error-color);
+      }
+
+      .error-message {
+        color: var(--error-color);
+        font-size: 0.85rem;
+        margin-top: 5px;
+        display: none;
+      }
+
+      input:invalid + .error-message {
+        display: block;
+      }
+
+      .btn {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.2s;
+      }
+
+      .btn-primary {
+        background-color: var(--primary-color);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .btn-danger {
+        background-color: var(--error-color);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        background-color: #dc2626;
+      }
+
+      .btn-secondary {
+        background-color: #9ca3af;
+        color: white;
+      }
+
+      .btn-secondary:hover {
+        background-color: #6b7280;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      th {
+        background-color: #f3f4f6;
+        font-weight: 600;
+      }
+
+      tr:hover {
+        background-color: #f9fafb;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 5px;
+      }
+
+      .btn-sm {
+        padding: 5px 10px;
+        font-size: 0.85rem;
+      }
+
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 4px;
+        color: white;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-100px);
+        opacity: 0;
+        transition: all 0.3s ease;
+      }
+
+      .notification.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .notification.success {
+        background-color: var(--success-color);
+      }
+
+      .notification.error {
+        background-color: var(--error-color);
+      }
+
+      .search-container {
+        margin-bottom: 15px;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        font-size: 1rem;
+      }
+
+      .empty-message {
+        text-align: center;
+        padding: 20px;
+        color: #6b7280;
+        font-style: italic;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>CRUD de Personas</h1>
+
+      <div class="crud-container">
+        <div class="form-container">
+          <h2 class="form-title">Agregar/Editar Persona</h2>
+          <form id="personaForm">
+            <input type="hidden" id="personaId" />
+
+            <div class="form-group">
+              <label for="nombre" class="required">Nombre</label>
+              <input type="text" id="nombre" name="nombre" required />
+              <div class="error-message">El nombre es obligatorio</div>
+            </div>
+
+            <div class="form-group">
+              <label for="curp" class="required">CURP</label>
+              <input
+                type="text"
+                id="curp"
+                name="curp"
+                required
+                pattern="^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9A-Z]{2}$"
+              />
+              <div class="error-message">
+                El CURP debe tener el formato correcto (18 caracteres)
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="telefono">Teléfono</label>
+              <input
+                type="tel"
+                id="telefono"
+                name="telefono"
+                pattern="[0-9]{10}"
+              />
+              <div class="error-message">El teléfono debe tener 10 dígitos</div>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" name="email" />
+              <div class="error-message">Ingrese un email válido</div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="saveBtn">
+                Guardar
+              </button>
+              <button type="button" class="btn btn-secondary" id="cancelBtn">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="table-container">
+          <div class="search-container">
+            <input
+              type="text"
+              id="searchInput"
+              class="search-input"
+              placeholder="Buscar personas..."
+            />
+          </div>
+
+          <table id="personasTable">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>CURP</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="personasTableBody">
+              <!-- Los datos se cargarán dinámicamente -->
+            </tbody>
+          </table>
+          <div id="emptyMessage" class="empty-message">
+            No hay personas registradas
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+      // Función para obtener todos los datos de la tabla
+      async function obtenerDatos() {
+        try {
+          const res = await fetch("http://localhost:3000/obtener", {
+            method: "GET",
+          });
+
+          if (!res.ok) {
+            throw new Error(`Error: ${res.status} ${res.statusText}`);
+          }
+
+          const datos = await res.json();
+          renderTable(datos); // Llamar a renderTable con los datos obtenidos
+        } catch (error) {
+          console.error("Error al obtener datos:", error);
+        }
+      }
+
+      // Función para renderizar la tabla de personas
+      function renderTable(data) {
+        const personasTableBody = document.getElementById("personasTableBody");
+        const emptyMessage = document.getElementById("emptyMessage");
+
+        personasTableBody.innerHTML = ""; // Limpiar la tabla
+
+        if (data.length === 0) {
+          emptyMessage.style.display = "block"; // Mostrar mensaje si no hay datos
+          return;
+        }
+
+        emptyMessage.style.display = "none"; // Ocultar mensaje si hay datos
+
+        data.forEach((persona) => {
+          const row = document.createElement("tr");
+
+          row.innerHTML = `
+            <td>${persona.id}</td>
+            <td>${persona.nombre}</td>
+            <td>${persona.curp}</td>
+            <td>${persona.telefono || "-"}</td>
+            <td>${persona.email || "-"}</td>
+          `;
+
+          personasTableBody.appendChild(row);
+        });
+      }
+
+      // Event listener para el formulario
+      document
+        .getElementById("personaForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          // Validar el formulario
+          if (!this.checkValidity()) {
+            return;
+          }
+
+          const persona = {
+            
+            nombre: document.getElementById("nombre").value,
+            curp: document.getElementById("curp").value,
+            telefono: document.getElementById("telefono").value,
+            email: document.getElementById("email").value,
+          };
+
+          try {
+            const res = await fetch("http://localhost:3000/guardar", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(persona),
+            });
+
+            if (!res.ok) {
+              throw new Error(`Error: ${res.status} ${res.statusText}`);
+            }
+
+            const data = await res.json();
+            showNotification(data.message, "success");
+            obtenerDatos(); // Actualizar la tabla después de guardar
+          } catch (error) {
+            console.error("Error al guardar persona:", error);
+            showNotification("Error al guardar persona", "error");
+          }
+
+          this.reset(); // Limpiar el formulario
+        });
+
+      // Función para mostrar notificaciones
+      function showNotification(message, type) {
+        const notification = document.getElementById("notification");
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.classList.add("show");
+
+        setTimeout(() => {
+          notification.classList.remove("show");
+        }, 3000);
+      }
+
+      // Inicializar la tabla al cargar la página
+      obtenerDatos();
+    </script>
+  </body>
+</html>
+```
