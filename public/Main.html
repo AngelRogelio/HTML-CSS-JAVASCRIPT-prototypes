@@ -331,7 +331,7 @@
       // Función para obtener todos los datos de la tabla
       async function obtenerDatos() {
         try {
-          const res = await fetch("http://localhost:3000/obtener", {
+          const res = await fetch("https://html-css-javascript-prototypes-production.up.railway.app/obtener", {
             method: "GET",
           });
 
@@ -395,7 +395,7 @@
           };
 
           try {
-            const res = await fetch("http://localhost:3000/guardar", {
+            const res = await fetch("https://html-css-javascript-prototypes-production.up.railway.app/guardar", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
