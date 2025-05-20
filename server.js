@@ -50,6 +50,29 @@ app.get('/obtener', async (req, res) => {
   }
 });
 
+//para borrar los elementos desde un boton
+app.delete('/borrar/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    await db.delete(personas).where({ id: id });
+    res.json({ message: 'Texto borrado correctamente' });
+  } catch (error) {
+    console.error('Error al borrar texto:', error);
+    res.status(500).send({ message: 'Error al borrar texto' });
+  }
+});
+//para actualizar una persona
+app.put('/actualizar/:id', async (req, res) => {
+  const { id } = req.params;
+  const persona = req.body;
+  try {
+    await db.update(personas).set({ nombre:persona.nombre, curp:persona.curp, telefono:persona.telefono, email:persona.email }).where({ id: id });
+    res.json({ message: 'Texto actualizado correctamente' });
+  } catch (error) {
+    console.error('Error al actualizar texto:', error);
+    res.status(500).send({ message: 'Error al actualizar texto' });
+  }
+});
 
 // Iniciar el servidor
 app.listen(port, () => {
