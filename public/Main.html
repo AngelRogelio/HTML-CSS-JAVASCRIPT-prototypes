@@ -328,66 +328,108 @@
     <div id="notification" class="notification"></div>
 
     <script>
-      // Función para obtener todos los datos de la tabla
+      // Obtener y mostrar los datos
       async function obtenerDatos() {
         try {
-          const res = await fetch("https://html-css-javascript-prototypes-production.up.railway.app/obtener", {
-            method: "GET",
-          });
-
-          if (!res.ok) {
+          const res = await fetch(
+            "https://html-css-javascript-prototypes-production.up.railway.app/obtener",
+            {
+              method: "GET",
+            }
+          );
+          if (!res.ok)
             throw new Error(`Error: ${res.status} ${res.statusText}`);
-          }
-
           const datos = await res.json();
-          renderTable(datos); // Llamar a renderTable con los datos obtenidos
+          renderTable(datos);
         } catch (error) {
           console.error("Error al obtener datos:", error);
         }
       }
 
-      // Función para renderizar la tabla de personas
+      // Renderizar la tabla con botones de acción
       function renderTable(data) {
         const personasTableBody = document.getElementById("personasTableBody");
         const emptyMessage = document.getElementById("emptyMessage");
-
-        personasTableBody.innerHTML = ""; // Limpiar la tabla
+        personasTableBody.innerHTML = "";
 
         if (data.length === 0) {
-          emptyMessage.style.display = "block"; // Mostrar mensaje si no hay datos
+          emptyMessage.style.display = "block";
           return;
         }
-
-        emptyMessage.style.display = "none"; // Ocultar mensaje si hay datos
+        emptyMessage.style.display = "none";
 
         data.forEach((persona) => {
           const row = document.createElement("tr");
-
           row.innerHTML = `
             <td>${persona.id}</td>
             <td>${persona.nombre}</td>
             <td>${persona.curp}</td>
             <td>${persona.telefono || "-"}</td>
             <td>${persona.email || "-"}</td>
-          `;
-
+            <td class="action-buttons">
+              <button class="btn btn-secondary btn-sm" onclick="editarPersona(${
+                persona.id
+              })">Editar</button>
+              <button class="btn btn-danger btn-sm" onclick="borrarPersona(${
+                persona.id
+              })">Eliminar</button>
+            </td>
+`;
           personasTableBody.appendChild(row);
         });
       }
 
-      // Event listener para el formulario
+      // Borrar persona
+      async function borrarPersona(id) {
+        if (!confirm("¿Seguro que deseas eliminar este registro?")) return;
+        try {
+          const res = await fetch(
+            `https://html-css-javascript-prototypes-production.up.railway.app/borrar/${id}`,
+            {
+              method: "DELETE",
+            }
+          );
+          if (!res.ok)
+            throw new Error(`Error: ${res.status} ${res.statusText}`);
+          const data = await res.json();
+          showNotification(data.message, "success");
+          obtenerDatos();
+        } catch (error) {
+          console.error("Error al borrar persona:", error);
+          showNotification("Error al borrar persona", "error");
+        }
+      }
+
+      // Editar persona (cargar datos en el formulario)
+      function editarPersona(id) {
+        const row = [
+          ...document.querySelectorAll("#personasTableBody tr"),
+        ].find((tr) => tr.children[0].textContent == id);
+        if (!row) return;
+        document.getElementById("personaId").value =
+          row.children[0].textContent;
+        document.getElementById("nombre").value = row.children[1].textContent;
+        document.getElementById("curp").value = row.children[2].textContent;
+        document.getElementById("telefono").value =
+          row.children[3].textContent === "-"
+            ? ""
+            : row.children[3].textContent;
+        document.getElementById("email").value =
+          row.children[4].textContent === "-"
+            ? ""
+            : row.children[4].textContent;
+        document.getElementById("saveBtn").textContent = "Actualizar";
+      }
+
+      // Guardar o actualizar persona
       document
         .getElementById("personaForm")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
-
-          // Validar el formulario
-          if (!this.checkValidity()) {
-            return;
-          }
+          if (!this.checkValidity()) return;
 
           const persona = {
-            
+            id: document.getElementById("personaId").value || undefined,
             nombre: document.getElementById("nombre").value,
             curp: document.getElementById("curp").value,
             telefono: document.getElementById("telefono").value,
@@ -395,36 +437,44 @@
           };
 
           try {
-            const res = await fetch("https://html-css-javascript-prototypes-production.up.railway.app/guardar", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(persona),
-            });
-
-            if (!res.ok) {
+            const res = await fetch(
+              "https://html-css-javascript-prototypes-production.up.railway.app/guardar",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(persona),
+              }
+            );
+            if (!res.ok)
               throw new Error(`Error: ${res.status} ${res.statusText}`);
-            }
-
             const data = await res.json();
             showNotification(data.message, "success");
-            obtenerDatos(); // Actualizar la tabla después de guardar
+            obtenerDatos();
           } catch (error) {
             console.error("Error al guardar persona:", error);
             showNotification("Error al guardar persona", "error");
           }
 
-          this.reset(); // Limpiar el formulario
+          this.reset();
+          document.getElementById("saveBtn").textContent = "Guardar";
+          document.getElementById("personaId").value = "";
         });
 
-      // Función para mostrar notificaciones
+      // Cancelar edición
+      document
+        .getElementById("cancelBtn")
+        .addEventListener("click", function () {
+          document.getElementById("personaForm").reset();
+          document.getElementById("saveBtn").textContent = "Guardar";
+          document.getElementById("personaId").value = "";
+        });
+
+      // Notificaciones
       function showNotification(message, type) {
         const notification = document.getElementById("notification");
         notification.textContent = message;
         notification.className = `notification ${type}`;
         notification.classList.add("show");
-
         setTimeout(() => {
           notification.classList.remove("show");
         }, 3000);
@@ -435,4 +485,3 @@
     </script>
   </body>
 </html>
-```
