@@ -1,45 +1,47 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Importa cors
+const cors = require('cors');
 const { db } = require('./db');
 const { personas } = require('./schema');
 const dotenv = require("dotenv");
+const path = require('path');
+
+dotenv.config();
 
 const app = express();
-const path = require('path');
+const port = 3000;
+
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
+
 // Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Ruta para tu archivo main.html
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'Main.html'));
+  res.sendFile(path.join(__dirname, 'public', 'Main.html'));
 });
 
-dotenv.config();
-
-
-const port = 3000;
-
-// Middleware para habilitar CORS
-app.use(cors());
-
-// Middleware para parsear JSON
-app.use(bodyParser.json());
-
-// Ruta para guardar un texto en la base de datos
+// Crear persona
 app.post('/guardar', async (req, res) => {
   const persona = req.body;
   console.log('Persona recibida:', persona);
-
   try {
-    await db.insert(personas).values({ nombre:persona.nombre, curp:persona.curp, telefono:persona.telefono, email:persona.email}); // Ajusta según tu ORM o base de datos
+    await db.insert(personas).values({
+      nombre: persona.nombre,
+      curp: persona.curp,
+      telefono: persona.telefono,
+      email: persona.email
+    });
     res.json({ message: 'Texto guardado correctamente' });
   } catch (error) {
     console.error('Error al guardar texto:', error);
     res.status(500).send({ message: 'Error al guardar texto' });
   }
 });
-// Ruta para obtener todos los textos de la base de datos
+
+// Obtener todas las personas
 app.get('/obtener', async (req, res) => {
   try {
     const personasres = await db.select().from(personas);
@@ -50,7 +52,7 @@ app.get('/obtener', async (req, res) => {
   }
 });
 
-//para borrar los elementos desde un boton
+// Borrar persona
 app.delete('/borrar/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -61,12 +63,20 @@ app.delete('/borrar/:id', async (req, res) => {
     res.status(500).send({ message: 'Error al borrar texto' });
   }
 });
-//para actualizar una persona
+
+// Actualizar persona
 app.put('/actualizar/:id', async (req, res) => {
   const { id } = req.params;
   const persona = req.body;
   try {
-    await db.update(personas).set({ nombre:persona.nombre, curp:persona.curp, telefono:persona.telefono, email:persona.email }).where({ id: id });
+    await db.update(personas)
+      .set({
+        nombre: persona.nombre,
+        curp: persona.curp,
+        telefono: persona.telefono,
+        email: persona.email
+      })
+      .where({ id: id });
     res.json({ message: 'Texto actualizado correctamente' });
   } catch (error) {
     console.error('Error al actualizar texto:', error);
