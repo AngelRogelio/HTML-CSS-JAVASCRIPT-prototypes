@@ -428,8 +428,8 @@
           e.preventDefault();
           if (!this.checkValidity()) return;
 
+          const id = document.getElementById("personaId").value;
           const persona = {
-            id: document.getElementById("personaId").value || undefined,
             nombre: document.getElementById("nombre").value,
             curp: document.getElementById("curp").value,
             telefono: document.getElementById("telefono").value,
@@ -437,14 +437,28 @@
           };
 
           try {
-            const res = await fetch(
-              "https://html-css-javascript-prototypes-production.up.railway.app/guardar",
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(persona),
-              }
-            );
+            let res;
+            if (id) {
+              // Si hay id, actualizar
+              res = await fetch(
+                `https://html-css-javascript-prototypes-production.up.railway.app/actualizar/${id}`,
+                {
+                  method: "PUT",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(persona),
+                }
+              );
+            } else {
+              // Si no hay id, crear nuevo
+              res = await fetch(
+                "https://html-css-javascript-prototypes-production.up.railway.app/guardar",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(persona),
+                }
+              );
+            }
             if (!res.ok)
               throw new Error(`Error: ${res.status} ${res.statusText}`);
             const data = await res.json();
