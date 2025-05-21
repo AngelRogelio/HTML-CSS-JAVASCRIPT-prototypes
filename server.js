@@ -56,7 +56,8 @@ app.get('/obtener', async (req, res) => {
 app.delete('/borrar/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    await db.delete(personas).where({ id: Number(id) });
+    // Usa solo el valor primitivo, no un objeto
+    await db.delete(personas).where('id', Number(id));
     res.json({ message: 'Texto borrado correctamente' });
   } catch (error) {
     console.error('Error al borrar texto:', error);
