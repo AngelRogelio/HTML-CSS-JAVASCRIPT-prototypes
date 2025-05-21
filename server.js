@@ -5,6 +5,7 @@ const { db } = require('./db');
 const { personas } = require('./schema');
 const dotenv = require("dotenv");
 const path = require('path');
+const { eq } = require('drizzle-orm');
 
 dotenv.config();
 
@@ -56,8 +57,7 @@ app.get('/obtener', async (req, res) => {
 app.delete('/borrar/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    // Usa solo el valor primitivo, no un objeto
-    await db.delete(personas).where('id', Number(id));
+    await db.delete(personas).where(eq(personas.id, Number(id)));
     res.json({ message: 'Texto borrado correctamente' });
   } catch (error) {
     console.error('Error al borrar texto:', error);
@@ -77,7 +77,7 @@ app.put('/actualizar/:id', async (req, res) => {
         telefono: persona.telefono,
         email: persona.email
       })
-      .where({ id: id });
+      .where(eq(personas.id, Number(id)));
     res.json({ message: 'Texto actualizado correctamente' });
   } catch (error) {
     console.error('Error al actualizar texto:', error);
